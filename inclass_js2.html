@@ -32,7 +32,7 @@
       border-radius: 12px;
       box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
       padding: 2rem;
-      max-width: 500px;
+      max-width: 550px;
       width: 100%;
     }
 
@@ -41,20 +41,33 @@
       margin-bottom: 1.5rem;
     }
 
-    label {
-      display: block;
+    .form-row {
+      display: flex;
+      align-items: center;
       margin-top: 1rem;
-      font-weight: bold;
+      justify-content: space-between;
     }
 
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.3rem;
+    .form-row label {
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .form-row input {
+      width: 120px;
+      padding: 0.4rem;
       border: 1px solid #ccc;
       border-radius: 6px;
     }
 
+    /* Special styling for name field (full width) */
+    #name {
+        width: 97%;
+        padding: 0.4rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        margin-top: 0.3rem;
+    }
     button {
       margin-top: 1.5rem;
       width: 100%;
@@ -81,6 +94,31 @@
       font-weight: bold;
       color: #002E5D;
     }
+
+    .scale {
+      margin-top: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.6rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #002E5D;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f6fa;
+    }
   </style>
 </head>
 <body>
@@ -92,31 +130,64 @@
     <div class="card">
       <h2>Enter Grades</h2>
       <form id="gradeForm">
-        <label for="name">Student Name</label>
+        <div class="form-row">
+          <label for="name">Student Name</label>
+        </div>
         <input type="text" id="name" required>
 
-        <label for="test1">Test 1 (25%)</label>
-        <input type="number" id="test1" min="0" max="100" required>
+        <div class="form-row">
+          <label for="test1">Test 1 (25%)</label>
+          <input type="number" id="test1" min="0" max="100" required>
+        </div>
 
-        <label for="test2">Test 2 (30%)</label>
-        <input type="number" id="test2" min="0" max="100" required>
+        <div class="form-row">
+          <label for="test2">Test 2 (30%)</label>
+          <input type="number" id="test2" min="0" max="100" required>
+        </div>
 
-        <label for="project1">Project 1 (1%)</label>
-        <input type="number" id="project1" min="0" max="100" required>
+        <div class="form-row">
+          <label for="project1">Project 1 (1%)</label>
+          <input type="number" id="project1" min="0" max="100" required>
+        </div>
 
-        <label for="project2">Project 2 (4%)</label>
-        <input type="number" id="project2" min="0" max="100" required>
+        <div class="form-row">
+          <label for="project2">Project 2 (4%)</label>
+          <input type="number" id="project2" min="0" max="100" required>
+        </div>
 
-        <label for="project3">Project 3 (15%)</label>
-        <input type="number" id="project3" min="0" max="100" required>
+        <div class="form-row">
+          <label for="project3">Project 3 (15%)</label>
+          <input type="number" id="project3" min="0" max="100" required>
+        </div>
 
-        <label for="assignments">Assignments (25%)</label>
-        <input type="number" id="assignments" min="0" max="100" required>
+        <div class="form-row">
+          <label for="assignments">Assignments (25%)</label>
+          <input type="number" id="assignments" min="0" max="100" required>
+        </div>
 
         <button type="button" onclick="calculateGPA()">Calculate GPA</button>
       </form>
 
       <div id="result" class="result"></div>
+
+      <div class="scale">
+        <h3>Grading Scale</h3>
+        <table>
+          <tr><th>Score Range</th><th>Letter Grade</th></tr>
+          <tr><td>94 and above</td><td>A</td></tr>
+          <tr><td>90 – 93.9</td><td>A-</td></tr>
+          <tr><td>87 – 89.9</td><td>B+</td></tr>
+          <tr><td>84 – 86.9</td><td>B</td></tr>
+          <tr><td>80 – 83.9</td><td>B-</td></tr>
+          <tr><td>77 – 79.9</td><td>C+</td></tr>
+          <tr><td>74 – 76.9</td><td>C</td></tr>
+          <tr><td>70 – 73.9</td><td>C-</td></tr>
+          <tr><td>67 – 69.9</td><td>D+</td></tr>
+          <tr><td>64 – 66.9</td><td>D</td></tr>
+          <tr><td>60 – 63.9</td><td>D-</td></tr>
+          <tr><td>Below 60</td><td>E</td></tr>
+        </table>
+      </div>
     </div>
   </main>
 
