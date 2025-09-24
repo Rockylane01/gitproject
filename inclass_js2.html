@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grade Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      color: #002E5D;
+    }
+
+    header {
+      background-color: #002E5D;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #002E5D;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #004080;
+    }
+
+    .result {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      background-color: #eef3f9;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #002E5D;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Student GPA Calculator</h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Enter Grades</h2>
+      <form id="gradeForm">
+        <label for="name">Student Name</label>
+        <input type="text" id="name" required>
+
+        <label for="test1">Test 1 (25%)</label>
+        <input type="number" id="test1" min="0" max="100" required>
+
+        <label for="test2">Test 2 (30%)</label>
+        <input type="number" id="test2" min="0" max="100" required>
+
+        <label for="project1">Project 1 (1%)</label>
+        <input type="number" id="project1" min="0" max="100" required>
+
+        <label for="project2">Project 2 (4%)</label>
+        <input type="number" id="project2" min="0" max="100" required>
+
+        <label for="project3">Project 3 (15%)</label>
+        <input type="number" id="project3" min="0" max="100" required>
+
+        <label for="assignments">Assignments (25%)</label>
+        <input type="number" id="assignments" min="0" max="100" required>
+
+        <button type="button" onclick="calculateGPA()">Calculate GPA</button>
+      </form>
+
+      <div id="result" class="result"></div>
+    </div>
+  </main>
+
+  <script>
+    function calculateGPA() {
+      const test1 = parseFloat(document.getElementById("test1").value) || 0;
+      const test2 = parseFloat(document.getElementById("test2").value) || 0;
+      const project1 = parseFloat(document.getElementById("project1").value) || 0;
+      const project2 = parseFloat(document.getElementById("project2").value) || 0;
+      const project3 = parseFloat(document.getElementById("project3").value) || 0;
+      const assignments = parseFloat(document.getElementById("assignments").value) || 0;
+
+      const finalScore = (test1 * 0.25) + (test2 * 0.30) + (project1 * 0.01) +
+                         (project2 * 0.04) + (project3 * 0.15) + (assignments * 0.25);
+
+      let grade = "";
+      if (finalScore >= 94) grade = "A";
+      else if (finalScore >= 90) grade = "A-";
+      else if (finalScore >= 87) grade = "B+";
+      else if (finalScore >= 84) grade = "B";
+      else if (finalScore >= 80) grade = "B-";
+      else if (finalScore >= 77) grade = "C+";
+      else if (finalScore >= 74) grade = "C";
+      else if (finalScore >= 70) grade = "C-";
+      else if (finalScore >= 67) grade = "D+";
+      else if (finalScore >= 64) grade = "D";
+      else if (finalScore >= 60) grade = "D-";
+      else grade = "E";
+
+      document.getElementById("result").innerHTML =
+        `Final Score: ${finalScore.toFixed(1)}% <br> Grade: ${grade}`;
+    }
+  </script>
+</body>
+</html>
