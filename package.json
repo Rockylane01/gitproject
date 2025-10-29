@@ -1,8 +1,27 @@
 {
+  "name": "gitproject",
+  "version": "1.0.0",
+  "description": "project 2 stuff",
+  "homepage": "https://github.com/Rockylane01/gitproject.html#readme",
+  "bugs": {
+    "url": "https://github.com/Rockylane01/gitproject.html/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rockylane01/gitproject.html.git"
+  },
+  "license": "ISC",
+  "author": "Rocky, Liv, Mckay, Jason",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "knex": "^3.1.0"
-  }
+  },
+  "devDependencies": {}
 }
