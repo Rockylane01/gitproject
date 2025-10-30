@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+</head>
+<body>
+    <header>
+        
+    </header>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th></th>
+            <th></th>
+        </tr>
+        <% for (i = 0; i < users.length - 1; i++) { %>
+            <tr>
+                <td><%= users[i]["id"] %></td>
+                <td><%= users[i]["first_name"] %> <%= users[i]["last_name"] %></td>
+                <td>Edit</td>
+                <td>Delete</td>
+            </tr>
+        <% } %>
+    </table>
+</body>
+</html>
