@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Dashboard</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h1>MyBudget</h1>
+        </div>
+        <nav class="header-right">
+            <a href="accounts.html" class="nav-link">Accounts</a>
+            <a href="#" class="nav-link logout">Logout</a>
+        </nav>
+    </header>
+
+    <!-- Welcome Message -->
+    <section class="welcome-section">
+        <h2>Hi, Name</h2>
+    </section>
+
+    <!-- Overview Section -->
+    <section class="overview">
+        <div class="overview-card income">
+            <h3>Monthly Income</h3>
+            <p>$0.00</p>
+        </div>
+        <div class="overview-card expenses">
+            <h3>Monthly Expenses</h3>
+            <p>$0.00</p>
+        </div>
+        <div class="overview-card net">
+            <h3>Net for the Month</h3>
+            <p>$0.00</p>
+        </div>
+    </section>
+
+    <!-- Transactions Section -->
+    <section class="transactions">
+        <div class="transactions-header">
+            <h3>Recent Transactions</h3>
+            <button class="add-btn">+ Add Record</button>
+        </div>
+
+        <div class="transactions-table">
+            <div class="table-header">
+                <span>#</span>
+                <span>Amount</span>
+                <span>Description</span>
+                <span>Account</span>
+                <span>Actions</span>
+            </div>
+
+            <!-- Example row -->
+            <div class="table-row">
+                <span>1</span>
+                <span>+$500</span>
+                <span>Freelance work</span>
+                <span>Checking Account</span>
+                <div class="actions">
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">Delete</button>
+                </div>
+            </div>
+
+            <!-- Future rows can be added here -->
+        </div>
+    </section>
+</body>
+</html>
