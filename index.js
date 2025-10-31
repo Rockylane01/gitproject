@@ -50,7 +50,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // get method to get req and res. Sends message to client and puts it on page
 app.get("/", (req, res) => {
+    res.render("login");
+})
+
+app.get("/landing", (req, res) => {
     res.render("landing");
+})
+
+app.get("/users", (req, res) => {
+    res.render("users");
 })
 
 // the object is listening. index.js is listening
