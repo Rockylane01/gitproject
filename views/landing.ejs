@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget Dashboard</title>
-    <link rel="stylesheet" href="/styles/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Header -->
@@ -46,28 +46,43 @@
             <button class="add-btn">+ Add Record</button>
         </div>
 
-        <div class="transactions-table">
-            <div class="table-header">
-                <span>#</span>
-                <span>Amount</span>
-                <span>Description</span>
-                <span>Account</span>
-                <span>Actions</span>
-            </div>
-
-            <!-- Example row -->
-            <div class="table-row">
-                <span>1</span>
-                <span>+$500</span>
-                <span>Freelance work</span>
-                <span>Checking Account</span>
-                <div class="actions">
-                    <button class="edit-btn">Edit</button>
-                    <button class="delete-btn">Delete</button>
-                </div>
-            </div>
-
-            <!-- Future rows can be added here -->
+        <div class="transactions-table-container">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Account</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td class="positive">+$500</td>
+                        <td>Freelance work</td>
+                        <td class="account-input-cell">
+                            <select name="account" id="account">
+                                <option value="Income">Income</option>
+                                <option value="Gas">Gas</option>
+                                <option value="Food">Food</option>
+                                <option value="School">School</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Phone">Phone</option>
+                                <option value="Insurance">Insurance</option>
+                                <option value="Medical">Medical</option>
+                                <option value="Misc">Misc</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                    <!-- Future rows can be added here -->
+                </tbody>
+            </table>
         </div>
     </section>
 </body>
