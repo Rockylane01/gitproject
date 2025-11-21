@@ -3,27 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles/styles.css">
     <title>User Management</title>
 </head>
 <body>
-    <header>
-        
+    <header class="header">
+        <div class="header-left">
+            <h1>User Management</h1>
+        </div>
+        <nav class="header-right">
+            <a href="/users" class="nav-link">User Admin</a>
+            <a href="accounts.html" class="nav-link">Accounts</a>
+            <a href="/logout" class="nav-link logout">Logout</a>
+        </nav>
     </header>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Full Name</th>
-            <th></th>
-            <th></th>
-        </tr>
-        <% for (i = 0; i < users.length - 1; i++) { %>
-            <tr>
-                <td><%= users[i]["id"] %></td>
-                <td><%= users[i]["first_name"] %> <%= users[i]["last_name"] %></td>
-                <td>Edit</td>
-                <td>Delete</td>
-            </tr>
-        <% } %>
-    </table>
+
+    <section class="transactions">
+        <div class="transactions-header">
+            <h3>Recent Transactions</h3>
+            <button class="add-btn">+ Add Record</button>
+        </div>
+
+        <div class="transactions-table-container">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Password</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>testUsername</td>
+                        <td>testPassword</td>
+                        <td>
+                            <button class="edit-btn">Edit</button>
+                            <button class="delete-btn">Delete</button>
+                        </td>
+                    </tr>
+                    <!-- Future rows can be added here -->
+                </tbody>
+            </table>
+        </div>
+    </section>
 </body>
 </html>

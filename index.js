@@ -1,15 +1,15 @@
-// Load environment variables from .env file into memory
-require('dotenv').config();
-
-const express = require("express");
-
-// needed for the session variable
+/**
+ * Inlcude dependent classes as variables
+ */
 const session = require('express-session')
-
 let path = require("path");
+const express = require("express");
 
 // allows us to work with html forms
 let bodyParser = require("body-parser");
+
+// Load environment variables from .env file into memory
+require('dotenv').config();
 
 // make expres object
 let app = express();
@@ -20,42 +20,90 @@ app.set("view engine", "ejs")
 // create a variable for port
 const port = process.env.PORT || 3000;
 
-
-// app.use(session({
-//     secret: process.env.SESSION_SECRET || 'fallback-secret-key',
-//     resave: false,
-//     saveUninitialized: false,
-// }));
+/**
+ * Set app "use" information
+ */
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-key',
+    resave: false,
+    saveUninitialized: false,
+}));
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // global authentication middleware - runs on every request
-// app.use((req, res, next) => {
+app.use((req, res, next) => {
 //     // skip authentication for login routes
-//     if (req.path === '/' || req.path === '/login' || req.path === '/logout') {
-//         // continue with the request path
-//         return next();
-//     }
+    if (req.path === '/login' || req.path === '/logout') {
+        // continue with the request path
+        return next();
+    }
 
-//     // check if user is logged in for all routes
-//     if (req.session.isLoggedIn) {
-//         // notice no return because nothing below it
-//         next(); // user is logged in, continue
-//     } else {
-//         res.render('login', {error_message: "Please log in to access this page"});
-//     }
-// });
+    req.session.isLoggedIn = true;
+    next();
+    // check if user is logged in for all routes
+    // if (req.session.isLoggedIn) {
+    //     // notice no return because nothing below it
+    //     next(); // user is logged in, continue
+    // } else {
+    //     res.render('login', {error_message: "Please log in to access this page"});
+    // }
+});
 
+/**
+ * ROUTES
+ *  - GET   /
+ *  - POST  /login
+ *  - GET   /logout
+ *  - GET   /users
+ * 
+ * 
+ */
 
-// get method to get req and res. Sends message to client and puts it on page
 app.get("/", (req, res) => {
-    res.render("login");
-})
+    if (req.session.isLoggedIn) {
+        res.render("landing");
+    }
+    else {
+        res.render("login", {error_message: "Must be Logged in"});
+    }
+});
 
-app.get("/landing", (req, res) => {
-    res.render("landing");
-})
+app.post("/login", (req, res) => {
+    // let username = req.body.username;
+    // let password = req.body.password;
+    const {username, password} = req.body;
+
+    knex("users")
+        .where({username: username, password: password})
+        .then(user => {
+            if (user.length > 0) {
+                req.session.isLoggedIn = true;
+                req.session.username = username;
+                res.redirect("/");
+            }
+            else {
+                // No matching user found
+                res.render("login", { error_message: "Invalid login" });
+            }
+        })
+        .catch(err => {
+            console.error("Login error:", err);
+            res.render("login", { error_message: "Error loging in" });
+        });
+});
+
+// Logout route
+app.get("/logout", (req, res) => {
+    // Get rid of the session object
+    req.session.destroy((err) => {
+        if (err) {
+            console.log(err);
+        }
+        res.redirect("/");
+    });
+});
 
 app.get("/users", (req, res) => {
     res.render("users");
