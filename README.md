@@ -1,2 +1,1 @@
-This is a test project to get to know how Git works
-(me when the)
+This is the repository for our Final Project in IS 403
