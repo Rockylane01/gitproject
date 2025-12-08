@@ -105,6 +105,23 @@ app.post("/login", (req, res) => {
         });
 });
 
+
+app.get("/accounts", (req, res) => {
+    // Example placeholder data — replace with DB call later
+    const accounts = [
+        { name: "Food" },
+        { name: "School" },
+        { name: "Gas" },
+        { name: "Misc" },
+        { name: "Savings" },
+        { name: "Subscriptions" },
+        { name: "Transport" }
+    ];
+
+    res.render("accounts", { accounts });
+});
+
+
 app.get("/logout", (req, res) => {
     // Get rid of the session object
     req.session.destroy((err) => {
