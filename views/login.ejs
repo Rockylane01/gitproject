@@ -30,6 +30,13 @@
     <div class="login-card">
     <h3 class="text-center mb-4">Login</h3>
     <br>
+
+    <% if (error_message) { %>
+    <div class="alert alert-danger">
+        <%= error_message %>
+    </div>
+    <% } %>
+
     <form>
     <div class="mb-3">
         <label for="username" class="form-label">Username</label>

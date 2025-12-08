@@ -30,34 +30,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // global authentication middleware - runs on every request
 app.use((req, res, next) => {
-//     // skip authentication for login routes
+    // check if the request path is for login or logout
+    // if it is, skip authentication
     if (req.path === '/login' || req.path === '/logout') {
         // continue with the request path
         return next();
     }
 
-    req.session.isLoggedIn = true;
-    next();
     // check if user is logged in for all routes
     // if (req.session.isLoggedIn) {
-    //     // notice no return because nothing below it
     //     next(); // user is logged in, continue
     // } else {
     //     res.render('login', {error_message: "Please log in to access this page"});
     // }
+
+    req.session.isLoggedIn = true;
+    next();
 });
 
 /**
  * ROUTES
  *  - GET   /
+ * 
  *  - GET  /login
  *  - POST  /login
  *  - GET   /logout
+ * 
  *  - GET   /users
+ *  - GET   /addEditUser
+ *  - POST   /addEditUser
+ *  - POST   /deleteUser
  * 
- * 
+ *  - GET   /accounts
+ *  - GET   /addEditAccount
+ *  - POST   /addEditAccount
+ *  - POST   /deleteAccount
  */
-
+// Landing page route - GET
 app.get("/", (req, res) => {
     if (req.session.isLoggedIn) {
         res.render("landing");
@@ -65,6 +74,11 @@ app.get("/", (req, res) => {
     else {
         res.render("login", {error_message: "Must be Logged in"});
     }
+});
+
+// Login/Logout routes - GET and POST
+app.get("/login", (req, res) => {
+    res.render("login");
 });
 
 app.post("/login", (req, res) => {
@@ -91,20 +105,35 @@ app.post("/login", (req, res) => {
         });
 });
 
-// Logout route
 app.get("/logout", (req, res) => {
     // Get rid of the session object
     req.session.destroy((err) => {
         if (err) {
             console.log(err);
         }
-        res.redirect("/");
+        res.redirect("/login");
     });
 });
 
+
+
+
+
+// User management routes - GET and POST
 app.get("/users", (req, res) => {
     res.render("users");
 })
+
+
+
+
+
+
+// Account management routes - GET and POST
+
+
+
+
 
 // the object is listening. index.js is listening
 app.listen(port, () => {
