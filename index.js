@@ -4,12 +4,8 @@
 const session = require('express-session')
 let path = require("path");
 const express = require("express");
-
-// allows us to work with html forms
-let bodyParser = require("body-parser");
-
-// Load environment variables from .env file into memory
-require('dotenv').config();
+let bodyParser = require("body-parser"); // allows us to work with html forms
+require('dotenv').config(); // Load environment variables from .env file into memory
 
 // make expres object
 let app = express();
@@ -54,6 +50,7 @@ app.use((req, res, next) => {
 /**
  * ROUTES
  *  - GET   /
+ *  - GET  /login
  *  - POST  /login
  *  - GET   /logout
  *  - GET   /users
