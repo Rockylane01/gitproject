@@ -10,6 +10,10 @@ require('dotenv').config(); // Load environment variables from .env file into me
 // make expres object
 let app = express();
 
+app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 const knex = require('knex')({
     client: 'pg',
     connection: {
@@ -36,23 +40,25 @@ app.use(session({
     saveUninitialized: false,
 }));
 
-app.use(express.urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// global authentication middleware - runs on every request
+// Make session visible in ALL EJS files (including partials)
 app.use((req, res, next) => {
-    // Skip authentication for login/logout routes
+    res.locals.session = req.session;
+    next();
+});
+
+// global authentication middleware
+app.use((req, res, next) => {
     if (req.path === '/login' || req.path === '/logout') {
         return next();
     }
 
-    // check if user is logged in for all routes
     if (req.session.isLoggedIn) {
-        next(); // user is logged in, continue
+        next();
     } else {
-        res.render('login', {error_message: "Please log in to access this page"});
+        res.render('login', { error_message: "Please log in to access this page" });
     }
 });
+
 
 
 /**
@@ -81,7 +87,7 @@ app.get("/", (req, res) => {
 
     // Get user's uuid from session username
     knex("credentials")
-        .select("credentials.uuid", "users.first_name", "users.last_name")
+        .select("credentials.uuid", "users.first_name", "users.last_name", "users.uuid")
         .join("users", "credentials.uuid", "users.uuid")
         .where({ username: req.session.username })
         .first()
@@ -158,21 +164,24 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    // let username = req.body.username;
-    // let password = req.body.password;
-    const {username, password} = req.body;
+    const { username, password } = req.body;
 
-    knex("credentials")
-        .where({username: username, password: password})
-        .then(credentials => {
-            if (credentials.length > 0) {
+    knex("credentials as c")
+        .join("users as u", "c.uuid", "u.uuid")
+        .select("c.uuid", "c.username", "u.is_admin")
+        .where({ "c.username": username, "c.password": password })
+        .first()
+        .then(row => {
+            if (row) {
                 console.log("Login successful");
+
                 req.session.isLoggedIn = true;
-                req.session.username = username;
+                req.session.username = row.username;
+                req.session.uuid = row.uuid;
+                req.session.isadmin = row.is_admin;
+
                 res.redirect("/");
-            }
-            else {
-                // No matching user found
+            } else {
                 res.render("login", { error_message: "Invalid login" });
             }
         })
@@ -181,7 +190,6 @@ app.post("/login", (req, res) => {
             res.render("login", { error_message: "Invalid login" });
         });
 });
-
 
 
 app.get("/logout", (req, res) => {
@@ -201,7 +209,7 @@ app.get("/users", (req, res) => {
         .from("users")
         .leftJoin("credentials", "users.uuid", "credentials.uuid")
         .then(users => {
-            res.render("users", { users });
+            res.render("users", { users, session: req.session });
         })
         .catch(err => {
             console.error("Error getting users:", err);
