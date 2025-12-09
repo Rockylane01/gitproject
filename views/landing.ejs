@@ -11,6 +11,7 @@
     <title>Budget Dashboard</title>
     <link rel="stylesheet" href="/styles/styles.css">
 </head>
+
 <body>
     <%- include('partials/header') %>
 
@@ -39,6 +40,35 @@
             <p>$<%= net %></p>
         </div>
     </section>
+
+    <!-- Search Bar -->
+    <form action="/" method="GET" style="
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    margin: 30px auto;
+    width: 90%;
+    max-width: 900px;
+    ">
+    <input 
+        type="text" 
+        name="search" 
+        placeholder="Search by description or account name"
+        value="<%= search %>"
+        style="
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid #d1d1d1;
+            border-radius: 8px;
+            font-size: 16px;
+        "
+    />
+
+    <button type="submit" class="search-btn">Search</button>
+
+    <a href="/" class="clear-btn">Clear</a>
+    </form>    
 
     <!-- Transactions Section -->
     <section class="transactions">

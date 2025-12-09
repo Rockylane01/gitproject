@@ -21,7 +21,8 @@ const knex = require('knex')({
         port: process.env.RDS_PORT,
         user: process.env.RDS_USERNAME,
         password: process.env.RDS_PASSWORD,
-        database: process.env.RDS_DB_NAME
+        database: process.env.RDS_DB_NAME,
+        ssl: process.env.DB_SSL ? {rejectUnauthorized: false} : false
     }
 });
 
@@ -80,12 +81,16 @@ app.use((req, res, next) => {
  *  - POST   /deleteAccount
  */
 // Landing page route - GET
+// Landing page route - GET
+// Landing page route - GET
 app.get("/", (req, res) => {
     if (!req.session.isLoggedIn) {
-        return res.render("login", {error_message: "Must be Logged in"});
+        return res.render("login", { error_message: "Must be Logged in" });
     }
 
-    // Get user's uuid from session username
+    const search = req.query.search;
+
+    // Step 1 — Get user's uuid + name
     knex("credentials")
         .select("credentials.uuid", "users.first_name", "users.last_name", "users.uuid")
         .join("users", "credentials.uuid", "users.uuid")
@@ -93,53 +98,62 @@ app.get("/", (req, res) => {
         .first()
         .then(user => {
             if (!user) {
-                return res.render("login", {error_message: "User not found"});
+                return res.render("login", { error_message: "User not found" });
             }
 
-            // Get user's accounts
-            return knex.select("accountid", "acct_name", "balance").from("accounts")
+            // Step 2 — Get user's accounts
+            return knex("accounts")
+                .select("accountid", "acct_name", "balance")
                 .where({ uuid: user.uuid })
                 .then(accounts => {
-                    // Get recent transactions for this user (last 10)
-                    return knex.select(
-                        "transactions.transactionid",
-                        "transactions.amount",
-                        "transactions.description",
-                        "transactions.date",
-                        "acct_from.acct_name as from_account",
-                        "acct_to.acct_name as to_account"
-                    )
-                    .from("transactions")
-                    .leftJoin("accounts as acct_from", "transactions.acct_from", "acct_from.accountid")
-                    .leftJoin("accounts as acct_to", "transactions.acct_to", "acct_to.accountid")
-                    .where({ "transactions.uuid": user.uuid })
-                    .orderBy("transactions.date", "desc")
-                    .limit(10)
-                    .then(transactions => {
-                        // Calculate monthly totals (simplified - using all transactions)
+
+                    // Step 3 — Build transaction query
+                    let txQuery = knex("transactions")
+                        .select(
+                            "transactions.transactionid",
+                            "transactions.amount",
+                            "transactions.description",
+                            "transactions.date",
+                            "acct_from.acct_name as from_account",
+                            "acct_to.acct_name as to_account"
+                        )
+                        .leftJoin("accounts as acct_from", "transactions.acct_from", "acct_from.accountid")
+                        .leftJoin("accounts as acct_to", "transactions.acct_to", "acct_to.accountid")
+                        .where("transactions.uuid", user.uuid);
+
+                    // If search is used, filter results
+                    if (search && search.trim() !== "") {
+                        txQuery = txQuery.andWhere(function () {
+                            this.where("transactions.description", "ilike", `%${search}%`)
+                                .orWhere("acct_from.acct_name", "ilike", `%${search}%`)
+                                .orWhere("acct_to.acct_name", "ilike", `%${search}%`);
+                        });
+                    } else {
+                        // Default: show last 10 newest transactions
+                        txQuery = txQuery.orderBy("transactions.date", "desc").limit(10);
+                    }
+                    
+                    // Step 4 — Execute transaction query
+                    return txQuery.then(transactions => {
                         let monthlyIncome = 0;
                         let monthlyExpenses = 0;
 
-                        transactions.forEach(transaction => {
-                            if (transaction.to_account) {
-                                // Income transaction
-                                monthlyIncome += parseFloat(transaction.amount);
-                            }
-                            if (transaction.from_account) {
-                                // Expense transaction
-                                monthlyExpenses += parseFloat(transaction.amount);
-                            }
+                        transactions.forEach(tx => {
+                            if (tx.to_account) monthlyIncome += parseFloat(tx.amount);
+                            if (tx.from_account) monthlyExpenses += parseFloat(tx.amount);
                         });
 
                         const net = monthlyIncome - monthlyExpenses;
 
+                        // Step 5 — Render
                         res.render("landing", {
-                            user: user,
-                            accounts: accounts,
-                            transactions: transactions,
+                            user,
+                            accounts,
+                            transactions,
                             monthlyIncome: monthlyIncome.toFixed(2),
                             monthlyExpenses: monthlyExpenses.toFixed(2),
-                            net: net.toFixed(2)
+                            net: net.toFixed(2),
+                            search: search || ""
                         });
                     });
                 });
@@ -153,10 +167,12 @@ app.get("/", (req, res) => {
                 monthlyIncome: "0.00",
                 monthlyExpenses: "0.00",
                 net: "0.00",
-                error_message: "Error loading dashboard data"
+                error_message: "Error loading dashboard data",
+                search: ""
             });
         });
 });
+
 
 // Login/Logout routes - GET and POST
 app.get("/login", (req, res) => {
@@ -301,6 +317,57 @@ app.post("/deleteUser/:id", (req, res) => {
         .catch(err => {
             console.error("Error deleting user:", err);
             res.redirect("/users");
+        });
+});
+
+app.get("/search", (req, res) => {
+    const searchTerm = req.query.q;
+    const username = req.session.username;
+
+    if (!searchTerm) {
+        return res.redirect("/");
+    }
+
+    // Step 1 — Find the user's UUID
+    knex("credentials")
+        .select("uuid")
+        .where({ username: username })
+        .first()
+        .then(credential => {
+            if (!credential) {
+                return res.redirect("/");
+            }
+
+            // Step 2 — Search transactions for THIS user only
+            return knex("transactions")
+                .select(
+                    "transactions.transactionid",
+                    "transactions.amount",
+                    "transactions.description",
+                    "transactions.date",
+                    "acct_from.acct_name as from_account",
+                    "acct_to.acct_name as to_account"
+                )
+                .leftJoin("accounts as acct_from", "transactions.acct_from", "acct_from.accountid")
+                .leftJoin("accounts as acct_to", "transactions.acct_to", "acct_to.accountid")
+                .where("transactions.uuid", credential.uuid)
+                .andWhere(function() {
+                    this.where("transactions.description", "ilike", `%${searchTerm}%`)
+                        .orWhere("transactions.amount", searchTerm)
+                        .orWhere("acct_from.acct_name", "ilike", `%${searchTerm}%`)
+                        .orWhere("acct_to.acct_name", "ilike", `%${searchTerm}%`);
+                })
+                .orderBy("transactions.date", "desc");
+        })
+        .then(results => {
+            res.render("searchResults", {
+                results: results,
+                searchTerm: searchTerm
+            });
+        })
+        .catch(err => {
+            console.error("Search error:", err);
+            res.redirect("/");
         });
 });
 
