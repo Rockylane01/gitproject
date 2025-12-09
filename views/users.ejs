@@ -7,44 +7,54 @@
     <title>User Management</title>
 </head>
 <body>
-    <header class="header">
-        <div class="header-left">
-            <h1>User Management</h1>
-        </div>
-        <nav class="header-right">
-            <a href="/users" class="nav-link">User Admin</a>
-            <a href="accounts.html" class="nav-link">Accounts</a>
-            <a href="/logout" class="nav-link logout">Logout</a>
-        </nav>
-    </header>
+    <%- include('partials/header') %>
 
     <section class="transactions">
         <div class="transactions-header">
-            <h3>Recent Transactions</h3>
-            <button class="add-btn">+ Add Record</button>
+            <h3>User Management</h3>
+            <a href="/addEditUser" class="add-btn">+ Add User</a>
         </div>
+
+        <!-- Error Message -->
+        <% if (typeof error_message !== 'undefined' && error_message) { %>
+            <div class="alert alert-danger text-center"><%= error_message %></div>
+        <% } %>
 
         <div class="transactions-table-container">
             <table class="transactions-table">
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
                         <th>Username</th>
-                        <th>Password</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>testUsername</td>
-                        <td>testPassword</td>
-                        <td>
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
-                        </td>
-                    </tr>
-                    <!-- Future rows can be added here -->
+                    <% if (users && users.length > 0) { %>
+                        <% users.forEach(user => { %>
+                            <tr>
+                                <td><%= user.uuid %></td>
+                                <td><%= user.first_name %> <%= user.last_name %></td>
+                                <td><%= user.email %></td>
+                                <td><%= user.username || 'N/A' %></td>
+                                <td>
+                                    <a href="/addEditUser?uuid=<%= user.uuid %>" class="edit-btn">Edit</a>
+                                    <form method="POST" action="/deleteUser/<%= user.uuid %>" style="display: inline;">
+                                        <button type="submit" class="delete-btn"
+                                                onclick="return confirm('Are you sure you want to delete this user?')">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No users found.</td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
         </div>

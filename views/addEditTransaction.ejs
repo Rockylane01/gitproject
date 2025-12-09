@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= transaction ? 'Edit Transaction' : 'Add Transaction' %></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/styles/styles.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container">
+        <div class="form-container">
+            <h2 class="text-center mb-4"><%= transaction ? 'Edit Transaction' : 'Add New Transaction' %></h2>
+
+            <form method="POST" action="/addEditTransaction">
+                <% if (transaction && transaction.transactionid) { %>
+                    <input type="hidden" name="transactionid" value="<%= transaction.transactionid %>">
+                <% } %>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="acct_from" class="form-label">From Account</label>
+                        <select class="form-select" id="acct_from" name="acct_from">
+                            <option value="">Select account (optional)</option>
+                            <% accounts.forEach(account => { %>
+                                <option value="<%= account.accountid %>"
+                                        <%= transaction && transaction.acct_from == account.accountid ? 'selected' : '' %>>
+                                    <%= account.acct_name %>
+                                </option>
+                            <% }) %>
+                        </select>
+                        <div class="form-text">Leave blank for external income (at least one account required)</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="acct_to" class="form-label">To Account</label>
+                        <select class="form-select" id="acct_to" name="acct_to">
+                            <option value="">Select account (optional)</option>
+                            <% accounts.forEach(account => { %>
+                                <option value="<%= account.accountid %>"
+                                        <%= transaction && transaction.acct_to == account.accountid ? 'selected' : '' %>>
+                                    <%= account.acct_name %>
+                                </option>
+                            <% }) %>
+                        </select>
+                        <div class="form-text">Leave blank for external expense (at least one account required)</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Amount *</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="amount" name="amount"
+                               value="<%= transaction ? transaction.amount || '' : '' %>"
+                               step="0.01" min="0.01" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"><%= transaction ? transaction.description || '' : '' %></textarea>
+                </div>
+
+                <div id="account-error" class="alert alert-danger" style="display: none;">
+                    At least one account (From or To) must be selected.
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <%= transaction ? 'Update Transaction' : 'Create Transaction' %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        const acctFromSelect = document.getElementById('acct_from');
+        const acctToSelect = document.getElementById('acct_to');
+        const errorDiv = document.getElementById('account-error');
+
+        // Hide error message when user selects an account
+        function hideErrorIfValid() {
+            if (acctFromSelect.value || acctToSelect.value) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        acctFromSelect.addEventListener('change', hideErrorIfValid);
+        acctToSelect.addEventListener('change', hideErrorIfValid);
+
+        // Prevent form submission if both accounts are empty
+        form.addEventListener('submit', function(e) {
+            const acctFrom = acctFromSelect.value;
+            const acctTo = acctToSelect.value;
+
+            // Check if both accounts are empty
+            if (!acctFrom && !acctTo) {
+                e.preventDefault(); // Prevent form submission
+                errorDiv.style.display = 'block';
+                errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                return false;
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        });
+    </script>
+
+</body>
+</html>
