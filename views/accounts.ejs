@@ -29,7 +29,7 @@
         <nav class="header-right">
             <a href="/users" class="nav-link">User Admin</a>
             <a href="/accounts" class="nav-link">Accounts</a>
-            <a href="#" class="nav-link logout">Logout</a>
+            <a href="/logout" class="nav-link logout">Logout</a>
         </nav>
     </header>
 
@@ -47,9 +47,9 @@
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="card shadow-sm account-card h-100">
                         <div class="card-body text-center">
-                            <h5 class="card-title"><%= account.name %></h5>
+                            <h5 class="card-title"><%= account.acct_name %></h5>
 
-                            <a href="/accounts/<%= account.name %>" class="btn btn-primary mt-3">
+                            <a href="/accounts/<%= account.acct_name %>" class="btn btn-primary mt-3">
                                 View
                             </a>
                         </div>

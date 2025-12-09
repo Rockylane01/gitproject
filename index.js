@@ -7,6 +7,18 @@ const express = require("express");
 let bodyParser = require("body-parser"); // allows us to work with html forms
 require('dotenv').config(); // Load environment variables from .env file into memory
 
+// Connecting to the database
+const knex = require("knex")({
+    client: "pg",
+    connection: {
+        host: process.env.RDS_HOSTNAME || "localhost",
+        user: process.env.RDS_USERNAME || "postgres",
+        password: process.env.RDS_PASSWORD,
+        database: process.env.RDS_DB_NAME || "project3",
+        port: process.env.RDS_PORT || 5432,
+    },
+});
+
 // make expres object
 let app = express();
 
@@ -30,23 +42,20 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // global authentication middleware - runs on every request
 app.use((req, res, next) => {
-    // check if the request path is for login or logout
-    // if it is, skip authentication
+    // Skip authentication for login/logout routes
     if (req.path === '/login' || req.path === '/logout') {
-        // continue with the request path
         return next();
     }
 
-    // check if user is logged in for all routes
-    // if (req.session.isLoggedIn) {
-    //     next(); // user is logged in, continue
-    // } else {
-    //     res.render('login', {error_message: "Please log in to access this page"});
-    // }
-
-    req.session.isLoggedIn = true;
-    next();
+    // Check if user is logged in for all other routes
+    if (req.session.isLoggedIn) {
+        next(); 
+    } 
+    else {
+        res.render("login", { error_message: "Please log in to access this page" });
+    }
 });
+
 
 /**
  * ROUTES
@@ -78,32 +87,47 @@ app.get("/", (req, res) => {
 
 // Login/Logout routes - GET and POST
 app.get("/login", (req, res) => {
-    res.render("login");
+    res.render("login", { error_message: "" });
 });
 
 app.post("/login", (req, res) => {
-    // let username = req.body.username;
-    // let password = req.body.password;
-    const {username, password} = req.body;
+    let sName = req.body.username;
+    let sPassword = req.body.password;
 
-    knex("users")
-        .where({username: username, password: password})
-        .then(user => {
-            if (user.length > 0) {
-                req.session.isLoggedIn = true;
-                req.session.username = username;
-                res.redirect("/");
+    // Finding credentials in table
+    knex("credentials")
+        .where("username", sName)
+        .andWhere("password", sPassword)
+        .first()
+        .then(creds => {
+            if (!creds) {
+                return res.render("login", { error_message: "Invalid login" });
             }
-            else {
-                // No matching user found
-                res.render("login", { error_message: "Invalid login" });
-            }
+
+            // Look up matching user
+            knex("users")
+                .where("uuid", creds.uuid)
+                .first()
+                .then(user => {
+                    if (!user) {
+                        return res.render("login", { error_message: "User profile missing" });
+                    }
+
+                    // Set session variables
+                    req.session.isLoggedIn = true;
+                    req.session.username = sName;
+                    req.session.uuid = user.uuid;
+                    req.session.is_admin = user.is_admin;
+
+                    return res.redirect("/");
+                });
         })
         .catch(err => {
             console.error("Login error:", err);
-            res.render("login", { error_message: "Error loging in" });
+            res.render("login", { error_message: "Invalid login" });
         });
 });
+
 
 
 app.get("/logout", (req, res) => {
@@ -117,34 +141,35 @@ app.get("/logout", (req, res) => {
 });
 
 
-
-
-
 // User management routes - GET and POST
 app.get("/users", (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.render("login", { error_message: "" });
+    }
+
+    if (!req.session.is_admin) {
+        return res.status(403).send("Access denied.");
+    }
+
     res.render("users");
-})
-
-
-
-
+});
 
 
 // Account management routes - GET and POST
 app.get("/accounts", (req, res) => {
-    // Example placeholder data — replace with DB call later
-    const accounts = [
-        { name: "Food" },
-        { name: "School" },
-        { name: "Gas" },
-        { name: "Misc" },
-        { name: "Savings" },
-        { name: "Subscriptions" },
-        { name: "Transport" }
-    ];
+    const userUUID = req.session.uuid;
 
-    res.render("accounts", { accounts });
+    knex("accounts")
+        .where("uuid", userUUID)
+        .then(accounts => {
+            res.render("accounts", { accounts: accounts });
+        })
+        .catch(err => {
+            console.error("Error loading accounts:", err);
+            res.render("accounts", { accounts: [] });
+        });
 });
+
 
 
 
