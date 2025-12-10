@@ -533,15 +533,12 @@ app.post("/addEditTransaction", (req, res) => {
 
     console.log("Transaction POST data:", { transactionid, acct_from, acct_to, amount, description });
 
-    // Get user's uuid from session
     knex("credentials")
         .select("uuid")
         .where({ username: req.session.username })
         .first()
         .then(credential => {
-            if (!credential) {
-                throw new Error("User not found");
-            }
+            if (!credential) throw new Error("User not found");
 
             const parsedAmount = parseFloat(amount);
             if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -551,12 +548,10 @@ app.post("/addEditTransaction", (req, res) => {
             const acctFromId = acct_from ? parseInt(acct_from) : null;
             const acctToId = acct_to ? parseInt(acct_to) : null;
 
-            // Check if both accounts are null (violates database constraint)
             if (!acctFromId && !acctToId) {
-                throw new Error("At least one account (From or To) must be selected");
+                throw new Error("At least one account must be selected");
             }
 
-            // Check if from and to accounts are the same
             if (acctFromId && acctToId && acctFromId === acctToId) {
                 throw new Error("From and To accounts cannot be the same");
             }
@@ -569,21 +564,44 @@ app.post("/addEditTransaction", (req, res) => {
                 description: description || null
             };
 
-            console.log("Transaction data to save:", transactionData);
-
+            // STEP 1: Insert or update the transaction
+            let query;
             if (transactionid) {
-                // Update existing transaction
-                return knex("transactions")
-                    .where({ transactionid: transactionid })
+                query = knex("transactions")
+                    .where({ transactionid })
                     .update(transactionData);
             } else {
-                // Create new transaction
-                return knex("transactions")
+                query = knex("transactions")
                     .insert(transactionData);
             }
+
+            return query.then(() => {
+                console.log("Transaction saved. Updating account balances…");
+
+                // STEP 2: Update account balances
+                let updates = [];
+
+                if (acctFromId) {
+                    updates.push(
+                        knex("accounts")
+                            .where({ accountid: acctFromId })
+                            .decrement("balance", parsedAmount)
+                    );
+                }
+
+                if (acctToId) {
+                    updates.push(
+                        knex("accounts")
+                            .where({ accountid: acctToId })
+                            .increment("balance", parsedAmount)
+                    );
+                }
+
+                return Promise.all(updates);
+            });
         })
         .then(() => {
-            console.log("Transaction saved successfully");
+            console.log("Balances updated successfully");
             res.redirect("/");
         })
         .catch(err => {
@@ -591,6 +609,7 @@ app.post("/addEditTransaction", (req, res) => {
             res.redirect("/");
         });
 });
+
 
 app.post("/deleteTransaction/:id", (req, res) => {
     knex("transactions")
