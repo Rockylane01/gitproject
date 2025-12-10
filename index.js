@@ -265,41 +265,50 @@ app.post("/addEditUser", (req, res) => {
     if (uuid) {
         // Update existing user
         knex("users")
-            .where({ uuid: uuid })
+            .where({ uuid })
             .update({ first_name, last_name, email })
             .then(() => {
-                // Also update credentials if username/password provided
                 if (username || password) {
                     const updateData = {};
                     if (username) updateData.username = username;
                     if (password) updateData.password = password;
 
                     return knex("credentials")
-                        .where({ uuid: uuid })
+                        .where({ uuid })
                         .update(updateData);
                 }
             })
-            .then(() => {
-                res.redirect("/users");
-            })
+            .then(() => res.redirect("/users"))
             .catch(err => {
                 console.error("Error updating user:", err);
                 res.redirect("/users");
             });
+
     } else {
         // Create new user
+        let newUuid;
+
         knex("users")
             .insert({ first_name, last_name, email })
             .returning("uuid")
             .then(result => {
-                const newUuid = result[0].uuid || result[0];
-                // Create credentials record
-                return knex("credentials")
-                    .insert({ uuid: newUuid, username, password });
+                newUuid = result[0].uuid || result[0];
+
+                return knex("credentials").insert({
+                    uuid: newUuid,
+                    username,
+                    password
+                });
             })
             .then(() => {
-                res.redirect("/users");
+                // Create unallocated funds account
+                return knex("accounts").insert({
+                    uuid: newUuid,
+                    acct_name: "unallocated funds",
+                    balance: 0
+                });
             })
+            .then(() => res.redirect("/users"))
             .catch(err => {
                 console.error("Error creating user:", err);
                 res.redirect("/users");
@@ -467,9 +476,38 @@ app.post("/addEditAccount", (req, res) => {
 });
 
 app.post("/deleteAccount/:id", (req, res) => {
+    const id = req.params.id;
+
+    // Step 1: get the account being deleted
     knex("accounts")
-        .where({ accountid: req.params.id })
-        .del()
+        .where({ accountid: id })
+        .first()
+        .then(acct => {
+            if (!acct) return null;
+
+            const { uuid, balance } = acct;
+
+            // Step 2: update unallocated funds account
+            return knex("accounts")
+                .where({ uuid, acct_name: "unallocated funds" })
+                .first()
+                .then(uf => {
+                    if (!uf) return null;
+
+                    return knex("accounts")
+                        .where({ accountid: uf.accountid })
+                        .increment("balance", balance);
+                })
+                .then(() => acct); // forward acct to next .then
+        })
+        .then(acct => {
+            // Step 3: delete original account
+            if (!acct) return;
+
+            return knex("accounts")
+                .where({ accountid: id })
+                .del();
+        })
         .then(() => {
             res.redirect("/accounts");
         })

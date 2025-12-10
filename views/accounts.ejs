@@ -48,17 +48,19 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title"><%= account.name %></h5>
                                 <p class="card-text text-muted">Balance: $<%= account.balance %></p>
-
                                 <div class="d-flex justify-content-center gap-2 mt-3">
                                     <a href="/addEditAccount?accountid=<%= account.id %>" class="btn btn-outline-primary btn-sm">
                                         Edit
                                     </a>
-                                    <form method="POST" action="/deleteAccount/<%= account.id %>" style="display: inline;">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                onclick="return confirm('Are you sure you want to delete this account?')">
-                                            Delete
-                                        </button>
-                                    </form>
+
+                                    <% if (account.name.toLowerCase() !== "unallocated funds") { %>
+                                        <form method="POST" action="/deleteAccount/<%= account.id %>" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                    onclick="return confirm('Are you sure you want to delete this account?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
