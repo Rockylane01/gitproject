@@ -1,5 +1,6 @@
 # Files to Ignore When Committing
 *.zip
+zipfiles/
 .env
 node_modules/
 images/
